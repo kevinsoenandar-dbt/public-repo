@@ -1,0 +1,25 @@
+name: 'athena_sandbox'
+version: '1.0.0'
+profile: 'athena_sandbox'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  athena_sandbox:
+    example:
+      +materialized: view
+
+seeds:
+  athena_sandbox:
+    +database: "{{ target.database }}"
+    example:
+      +enabled: true
