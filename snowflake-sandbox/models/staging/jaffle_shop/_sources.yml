@@ -1,0 +1,83 @@
+version: 2
+
+sources:
+  - name: jaffle_shop
+    description: ""
+    database: jaffle_shop
+    schema: raw
+    tables:
+      - name: raw_orders
+        description: ""
+        columns:
+          - name: id
+            description: "The unique id for each order."
+          - name: customer
+            description: "The unique id for each customer."
+          - name: ordered_at
+            description: "The timestamp when the order was placed."
+          - name: store_id
+            description: "The unique id for each store that the sale took place in."
+          - name: subtotal
+            description: "The subtotal of the order in cents."
+          - name: tax_paid
+            description: "The tax paid on the order in cents."
+          - name: order_total
+            description: "The total amount of the order in cents."
+
+      - name: raw_items
+        description: ""
+        columns:
+          - name: id
+            description: ""
+          - name: order_id
+            description: ""
+          - name: sku
+            description: ""
+
+      - name: raw_stores
+        description: ""
+        columns:
+          - name: id
+            description: ""
+          - name: name
+            description: ""
+          - name: opened_at
+            description: ""
+          - name: tax_rate
+            description: ""
+
+      - name: raw_products
+        description: ""
+        columns:
+          - name: sku
+            description: ""
+          - name: name
+            description: ""
+          - name: type
+            description: ""
+          - name: price
+            description: ""
+          - name: description
+            description: ""
+
+      - name: raw_supplies
+        description: ""
+        columns:
+          - name: id
+            description: ""
+          - name: name
+            description: ""
+          - name: cost
+            description: ""
+          - name: perishable
+            description: ""
+          - name: sku
+            description: ""
+
+      - name: raw_customers
+        description: ""
+        columns:
+          - name: id
+            description: ""
+          - name: name
+            description: ""
