@@ -1,0 +1,58 @@
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'test_databricks'
+version: '1.0.0'
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'kev_databricks'
+
+dbt-cloud:
+  project-id: 445329
+  defer-env-id: 381220
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+quoting:
+  schema: false
+  identifier: false
+
+models:
+  test_databricks:
+    staging:
+      +database: "{{ 'ksoenandar_bronze' if target.name == 'prod' else 'ksoenandar_dev' }}"
+      bike_shop:
+        +schema: bike_shop
+        +grants:
+          select:
+            - tonayya-transformer
+    mart:
+      +materialized: table
+      +database: "{{ 'ksoenandar_gold' if target.name == 'prod' else 'ksoenandar_dev' }}"
+      core:
+        +schema: core
+        +access: public
+
+flags:
+  use_materialization_v2: true
+
+  require_generic_test_arguments_property: true
+on-run-start:
+  - "{{ create_table_copy(var('should_run', False)) }}"
+
+on-run-end:
+  - "{{ dbt_artifacts.upload_results(results) }}"
+  - "{{ grant_revoke_schema_usage() }}"
