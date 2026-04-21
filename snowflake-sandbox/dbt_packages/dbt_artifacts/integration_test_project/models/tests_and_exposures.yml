@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: non_incremental
+    description: "A normal, non incremental model"
+    columns:
+      - name: id
+        tests:
+          - not_null
+          - unique
+
+exposures:
+  - name: ceo_imaginary_dashboard
+    type: dashboard
+    maturity: high
+    description: "ceo's favourite dashboard"
+    url: https://bi.tool/dashboards/1
+
+    depends_on:
+      - ref('non_incremental')
+
+    owner:
+      name: Claire from Data
+      email: data@jaffleshop.com
+
+    config:
+      tags: ["ceo", "data"]
+  - name: cio_dashboard
+    type: dashboard
+    maturity: high
+    description: '{{ doc("clickstream") }}'
+    url: https://bi.tool/dashboards/1
+
+    depends_on:
+      - ref('incremental')
+
+    owner:
+      name: Henry from IT
+      email: henry@jaffleshop.com
+    config:
+      tags: ["cio", "it"]

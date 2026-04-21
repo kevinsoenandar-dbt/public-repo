@@ -1,0 +1,1 @@
+{{ test_accepted_values(column_name="customer_segment", model=get_where_subquery(ref('int_customer_rfm_segments')), values=["Champions","Loyal Customers","Potential Loyalists","At-Risk","Hibernating"]) }}

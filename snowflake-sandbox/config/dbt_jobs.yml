@@ -1,0 +1,187 @@
+jobs:
+  import_1:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 373612
+    dbt_version:
+    name: Run All Models
+    settings:
+      threads: 4
+      target_name: prod
+    execution:
+      timeout_seconds: 0
+    deferring_job_definition_id:
+    deferring_environment_id:
+    run_generate_sources: true
+    execute_steps:
+      - dbt build
+    generate_docs: true
+    schedule:
+      cron: 3 */12 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: false
+      git_provider_webhook: false
+      schedule: false
+      on_merge: false
+    description: ''
+    run_compare_changes: false
+    compare_changes_flags: --select state:modified
+    job_type: other
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []
+  import_2:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 374694
+    dbt_version:
+    name: Nightly QA Job
+    settings:
+      threads: 4
+      target_name: qa
+    execution:
+      timeout_seconds: 0
+    deferring_job_definition_id:
+    deferring_environment_id:
+    run_generate_sources: false
+    execute_steps:
+      - dbt build
+    generate_docs: false
+    schedule:
+      cron: 0 14 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: false
+      git_provider_webhook: false
+      schedule: true
+      on_merge: false
+    description: ''
+    run_compare_changes: false
+    compare_changes_flags: --select state:modified
+    job_type: scheduled
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []
+  import_3:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 374695
+    dbt_version:
+    name: Feature -> QA PR Check
+    settings:
+      threads: 4
+      target_name: qa_ci
+    execution:
+      timeout_seconds: 3599
+    deferring_job_definition_id:
+    deferring_environment_id: 374694
+    run_generate_sources: false
+    execute_steps:
+      - dbt build --select state:modified+
+    generate_docs: false
+    schedule:
+      cron: 3 */12 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: true
+      git_provider_webhook: false
+      schedule: false
+      on_merge: false
+    description: ''
+    run_compare_changes: true
+    compare_changes_flags: --select state:modified
+    job_type: ci
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []
+  import_4:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 374695
+    dbt_version:
+    name: Feature -> QA PR Merged
+    settings:
+      threads: 4
+      target_name: qa
+    execution:
+      timeout_seconds: 0
+    deferring_job_definition_id:
+    deferring_environment_id: 374694
+    run_generate_sources: false
+    execute_steps:
+      - dbt build --select state:modified+
+    generate_docs: false
+    schedule:
+      cron: 3 */12 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: false
+      git_provider_webhook: false
+      schedule: false
+      on_merge: true
+    description: ''
+    run_compare_changes: false
+    compare_changes_flags: --select state:modified
+    job_type: merge
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []
+  import_5:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 374696
+    dbt_version:
+    name: QA -> Prod PR Check
+    settings:
+      threads: 4
+      target_name: release_ci
+    execution:
+      timeout_seconds: 3600
+    deferring_job_definition_id:
+    deferring_environment_id: 373612
+    run_generate_sources: false
+    execute_steps:
+      - dbt build --select state:modified+
+    generate_docs: false
+    schedule:
+      cron: 3 */12 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: true
+      git_provider_webhook: false
+      schedule: false
+      on_merge: false
+    description: ''
+    run_compare_changes: true
+    compare_changes_flags: --select state:modified
+    job_type: ci
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []
+  import_6:
+    account_id: 127732
+    project_id: 192225
+    environment_id: 374696
+    dbt_version:
+    name: QA -> Prod Merge Build
+    settings:
+      threads: 4
+      target_name: prod
+    execution:
+      timeout_seconds: 0
+    deferring_job_definition_id:
+    deferring_environment_id: 373612
+    run_generate_sources: false
+    execute_steps:
+      - dbt build --select state:modified+
+    generate_docs: false
+    schedule:
+      cron: 3 */12 * * 0,1,2,3,4,5,6
+    triggers:
+      github_webhook: false
+      git_provider_webhook: false
+      schedule: false
+      on_merge: true
+    description: ''
+    run_compare_changes: false
+    compare_changes_flags: --select state:modified
+    job_type: merge
+    triggers_on_draft_pr: false
+    job_completion_trigger_condition:
+    custom_environment_variables: []

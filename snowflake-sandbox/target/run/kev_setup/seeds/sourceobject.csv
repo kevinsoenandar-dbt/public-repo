@@ -1,0 +1,14 @@
+
+    
+    
+    
+    create table analytics.dbt_ksoenandar.sourceobject (SOURCENAME text,OBJECTNAME text,OBJECTDESCRIPTION text,SOURCEOBJECTID integer)
+  ;
+    -- dbt seed --
+    
+            insert into analytics.dbt_ksoenandar.sourceobject (SOURCENAME, OBJECTNAME, OBJECTDESCRIPTION, SOURCEOBJECTID) values
+            (%s,%s,%s,%s)
+        
+
+;
+  
