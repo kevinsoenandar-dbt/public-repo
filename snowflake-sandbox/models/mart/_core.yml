@@ -1,0 +1,298 @@
+models:
+  - name: fct_order_items
+    latest_version: 1
+    config:
+      access: public
+      contract:
+        enforced: true
+    columns:
+      - name: order_item_id
+        data_type: varchar
+        contraints:
+          - type: not_null
+          - type: unique
+      - name: order_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+        data_test:
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: product_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+        data_tests:
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+      - name: customer_id
+        data_type: varchar
+        constraints: 
+          - type: not_null
+        data_tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: ordered_at
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null
+      - name: product_name
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: product_price
+        data_type: number(16,2)
+        constraints:
+          - type: not_null
+      - name: is_food_item
+        data_type: boolean
+        constraints: 
+          - type: not_null
+      - name: is_drink_item
+        data_type: boolean
+        constraints:
+          - type: not_null
+      - name: supply_cost
+        data_type: number(29,2)
+        constraints:
+          - type: not_null
+    versions:
+      - v: 1
+        deprecation_date: 2025-12-31
+        config:
+          alias: fct_order_items
+      - v: 2
+        columns:
+          - name: base_supply_cost
+            data_type: number(29,2)
+          - include: all
+            exclude: [supply_cost, product_name]
+  - name: dim_order
+    columns:
+      - name: order_id
+        description: The unique key of the dim_order table.
+        data_tests:
+          - not_null
+          - unique
+      - name: location_name
+        description: The location in which the order was made.
+      - name: tax_rate
+        description: The prevailing tax rate for the location in which the order was made.
+      - name: subtotal
+        description: The subtotal of the order (item prices only, not including taxes)
+      - name: order_total
+        description: The total amount of the order, including taxes
+      - name: ordered_at
+        description: The timestamp the order was placed at.
+  - name: fct_customer_segment_orders
+    description: >
+      Mart-level summary of customer behaviour by RFM segment. References the
+      Python model int_customer_rfm_segments (upstream) and dim_customer (upstream),
+      demonstrating that SQL models can consume Python model outputs via ref() in
+      exactly the same way as any other dbt model.
+    columns:
+      - name: customer_segment
+        description: The RFM segment label (e.g. Champions, At-Risk).
+        data_tests:
+          - not_null
+          - unique
+      - name: customer_count
+        description: Number of distinct customers in this segment.
+        data_tests:
+          - not_null
+      - name: avg_lifetime_value
+        description: Average total revenue per customer in this segment.
+        data_tests:
+          - not_null
+      - name: avg_order_frequency
+        description: Average number of orders per customer in this segment.
+        data_tests:
+          - not_null
+      - name: avg_days_since_last_order
+        description: Average recency (days since last order) per customer in this segment.
+        data_tests:
+          - not_null
+
+  - name: time_spine_daily
+    description: A time spine with one row per day, ranging from 5 years in the past to 30 days into the future.
+    time_spine:
+      standard_granularity_column: date_day  # The base column used for time joins
+    columns:
+      - name: date_day
+        description: The base date column for daily granularity
+        granularity: day
+
+semantic_models:
+  - name: order_item
+    defaults:
+      agg_time_dimension: order_date
+    description: |
+      Model containing order data at the item level. Can be grouped by / rolled up to the order level as needed.
+    model: ref('fct_order_items')
+    entities:
+      - name: order_item
+        type: primary
+        expr: order_item_id
+      - name: order_id
+        type: foreign
+      - name: product
+        type: foreign
+        expr: product_id
+      - name: customer
+        type: foreign
+        expr: customer_id
+    dimensions:
+      - name: order_date
+        type: time
+        expr: date_trunc('day', ordered_at)::date
+        type_params:
+          time_granularity: day
+    measures:
+      - name: order_item_revenue
+        description: The amount of revenue earned for each item in the order
+        agg: sum
+        expr: product_price
+      - name: order_item_cost
+        description: The cost incurred for the item in the order
+        agg: sum
+        expr: supply_cost
+      - name: order_count
+        description: The number of orders
+        agg: count_distinct
+        expr: order_id
+  - name: order
+    description: Order dimension table containing order details including location and financials.
+    model: ref('dim_order')
+    entities:
+      - name: order_id
+        type: primary
+        expr: order_id
+    dimensions:
+      - name: location_name
+        description: The location in which the order was made.
+        type: categorical
+      - name: high_tax_area
+        description: Classification if the order was made in a high tax region
+        type: categorical
+        expr: tax_rate_percent > 5
+      - name: large_order
+        description: Classification if the order is large
+        type: categorical
+        expr: subtotal > 30
+  - name: market_data
+    description: Market data on food and beverage sales by month
+    model: ref('market_data')
+    defaults: 
+      agg_time_dimension: report_month
+    dimensions:
+      - name: report_month
+        type: time
+        type_params:
+          time_granularity: month
+    measures:
+      - name: market_food_sales
+        description: Total food sales in the market
+        agg: sum
+        expr: food_sales
+        create_metric: true
+      - name: market_beverage_sales
+        description: Total beverage sales in the market
+        agg: sum
+        expr: beverage_sales
+        create_metric: true
+      - name: market_total_sales
+        description: Total food and beverage sales in the market
+        agg: sum
+        expr: total_sales
+        create_metric: true
+    primary_entity: market_data_id
+
+metrics:
+  - name: revenue
+    description: The revenue that the business earns from all orders; made up of the price paid for all items in orders
+    label: Revenue
+    type: simple
+    type_params:
+      measure: 
+        name: order_item_revenue
+        join_to_timespine: true
+  # - name: monthly_revenue
+  #   description: The revenue that the business earns from all orders on a monthly basis
+  #   label: Monthly Revenue
+  #   type: simple
+  #   type_params:
+  #     measure: 
+  #       name: order_item_revenue
+  #       join_to_timespine: true
+  #   time_granularity: month
+  - name: monthly_revenue_l1m
+    description: Last month's revenue
+    label: Monthly Revenue L1M (Last Month)
+    type: derived
+    type_params:
+      expr: last_month_revenue
+      metrics:
+        - name: revenue
+          alias: last_month_revenue
+          offset_window: 1 month
+    time_granularity: month
+  - name: mtd_revenue
+    description: The cumulative MTD revenue that the business earns from all orders on a given date
+    label: MTD Revenue
+    type: cumulative
+    type_params:
+      cumulative_type_params:
+        grain_to_date: month
+      measure:
+        name: order_item_revenue
+        fill_nulls_with: 0
+  - name: mom_revenue_performance
+    description: Performance comparison between each month's revenue relative to the prior month's
+    label: MoM Revenue Performance
+    type: derived
+    type_params:
+      expr: (current_month / previous_month) - 1
+      metrics: 
+        - name: revenue
+          alias: current_month
+        - name: revenue
+          offset_window: 1 month
+          alias: previous_month
+  - name: order_count
+    description: The total number of orders that the business receives
+    label: Order Count
+    type: simple
+    type_params:
+      measure: order_count
+  - name: average_order_amount
+    description: The average order size
+    label: Average Order Amount
+    type: ratio
+    type_params:
+      numerator: revenue
+      denominator: order_count
+  - name: jaffle_market_share
+    description: The market share of our jaffle shop relative to the market's total sales in a given month
+    label: Market Share
+    type: ratio
+    type_params:
+      numerator: revenue
+      denominator: market_total_sales
+
+saved_queries:
+  - name: customer_leaderboard
+    description: This is a leaderboard table to show customers' all-time purchases at the Jaffle Shop
+    label: Customer Leaderboard
+    query_params:
+      metrics:
+        - revenue
+      group_by:
+        - Entity('order_item__customer')
+    exports:
+      - name: customer_leaderboard_export
+        config:
+          export_as: view
+          alias: customer_leaderboard

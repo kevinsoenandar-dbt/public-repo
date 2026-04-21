@@ -1,0 +1,1 @@
+{{ test_unique(column_name="customer_id", model=get_where_subquery(ref('int_customer_rfm_segments'))) }}

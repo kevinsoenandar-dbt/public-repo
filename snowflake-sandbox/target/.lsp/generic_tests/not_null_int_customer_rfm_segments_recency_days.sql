@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="recency_days", model=get_where_subquery(ref('int_customer_rfm_segments'))) }}

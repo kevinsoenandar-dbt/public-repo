@@ -1,0 +1,12 @@
+
+    
+    
+    truncate table "ANALYTICS"."DBT_KSOENANDAR"."MARKET_DATA";
+    -- dbt seed --
+    
+            insert into analytics.dbt_ksoenandar.market_data (report_month,  food_sales,  beverage_sales,  total_sales) values
+            (%s,%s,%s,%s),(%s,%s,%s,%s),(%s,%s,%s,%s),(%s,%s,%s,%s)
+        
+
+;
+  
