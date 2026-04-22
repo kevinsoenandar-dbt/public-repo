@@ -75,7 +75,7 @@ jobs:
             -o /tmp/job_response.json \
             -w "%{http_code}" \
             -X POST \
-            "https://cloud.getdbt.com/api/v3/accounts/${{ vars.DBT_ACCOUNT_ID }}/jobs/${{ vars.DBT_JOB_ID }}/run/" \
+            "https://cloud.getdbt.com/api/v2/accounts/${{ vars.DBT_ACCOUNT_ID }}/jobs/${{ vars.DBT_JOB_ID }}/run/" \
             -H "Authorization: Bearer ${DBT_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{\"cause\": \"Triggered by tag ${TAG_NAME}\"}")
