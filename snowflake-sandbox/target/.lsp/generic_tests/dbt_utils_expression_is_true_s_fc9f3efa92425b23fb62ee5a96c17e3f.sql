@@ -1,1 +1,0 @@
-{{ dbt_utils.test_expression_is_true(expression="order_total - tax_paid = subtotal", model=get_where_subquery(ref('stg_orders'))) }}

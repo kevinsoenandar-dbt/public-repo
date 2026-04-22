@@ -1,1 +1,0 @@
-{{ test_not_null(column_name="avg_days_since_last_order", model=get_where_subquery(ref('fct_customer_segment_orders'))) }}

@@ -1,1 +1,0 @@
-{{ test_unique(column_name="customer_segment", model=get_where_subquery(ref('fct_customer_segment_orders'))) }}

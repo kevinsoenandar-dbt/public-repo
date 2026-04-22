@@ -1,1 +1,0 @@
-{{ test_not_null(column_name="rfm_score", model=get_where_subquery(ref('int_customer_rfm_segments'))) }}
