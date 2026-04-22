@@ -28,7 +28,6 @@ jobs:
             -H "Content-Type: application/json")
 
           echo "HTTP status: ${http_status}"
-          cat /tmp/env_get_response.json
 
           if [[ "${http_status}" -lt 200 || "${http_status}" -ge 300 ]]; then
             echo "Failed to fetch environment details with HTTP status ${http_status}"
@@ -41,9 +40,25 @@ jobs:
           DBT_API_TOKEN: ${{ secrets.DBT_API_TOKEN }}
           TAG_NAME: ${{ steps.tag.outputs.name }}
         run: |
-          jq --arg tag "${TAG_NAME}" \
-            '.data | .custom_branch = $tag | .use_custom_branch = true' \
-            /tmp/env_get_response.json > /tmp/env_update_body.json
+          jq --arg tag "${TAG_NAME}" '
+            .data | {
+              account_id,
+              project_id,
+              credentials_id,
+              connection_id,
+              extended_attributes_id,
+              name,
+              dbt_version,
+              type,
+              use_custom_branch: true,
+              custom_branch: $tag,
+              supports_docs,
+              deployment_type,
+              enable_model_query_history,
+              state,
+              primary_profile_id
+            }
+          ' /tmp/env_get_response.json > /tmp/env_update_body.json
 
           echo "Request body:"
           cat /tmp/env_update_body.json
