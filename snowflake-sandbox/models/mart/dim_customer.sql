@@ -2,7 +2,7 @@ WITH stg_customers AS (
   /* Customer data with basic cleaning and transformation applied, one row per customer. */
   SELECT
     *
-  FROM {{ ref('kev_setup', 'stg_customers') }}
+  FROM {{ ref('stg_customers') }}
 ), filter AS (
   SELECT
     *
