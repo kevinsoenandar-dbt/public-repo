@@ -7,5 +7,5 @@ packages:
     version: 0.10.0
   - git: https://github.com/dbt-labs/dbt-audit-helper.git
     name: audit_helper
-    revision: b8f3a3348ce0ff8afc3aa4b9ade2123b00772473
+    revision: 3bd0ca4e9d79b7d740ad7e77384b3d03a16cf242
 sha1_hash: f2a73967505955af30d18f70489a423fd47cdf79

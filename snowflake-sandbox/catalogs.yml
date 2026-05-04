@@ -1,0 +1,12 @@
+catalogs:
+  - name: glue_catalog
+    active_write_integration: sf_glue_catalog
+    write_integrations:
+      - name: sf_glue_catalog
+        external_volume: ksoenandar_sandbox_iceberg_volume
+        catalog_type: iceberg_rest
+        table_format: iceberg
+        adapter_properties:
+          change_tracking: True
+          catalog_linked_database: dbt_ksoenandar_staging
+          catalog_linked_database_type: glue

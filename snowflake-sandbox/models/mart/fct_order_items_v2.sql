@@ -1,3 +1,8 @@
+{{ config(
+    materialized='table',
+    catalog_name='glue_catalog'
+)}}
+
 with
 
 order_items as (
