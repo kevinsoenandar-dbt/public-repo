@@ -2,7 +2,7 @@ import pandas as pd
 
 
 def model(dbt, session):
-    dbt.config(materialized="table")
+    dbt.config(materialized="table", enabled=False)
 
     # --- Reference upstream SQL model ---
     order_items = dbt.ref("fct_order_items", v=2).to_pandas()

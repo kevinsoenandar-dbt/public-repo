@@ -1,3 +1,5 @@
+{{ config(enabled=False)}}
+
 with segments as (
     select * from {{ ref('int_customer_rfm_segments') }}
 ),

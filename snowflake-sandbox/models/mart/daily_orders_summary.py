@@ -2,7 +2,7 @@ import holidays
 
 def model(dbt, session):
     # dbt will install/import this package for the Python model runtime
-    dbt.config(packages=["holidays"])
+    dbt.config(packages=["holidays"], enabled=False)
 
     from snowflake.snowpark.functions import col, lit, sum as sum_, to_date, when
 
