@@ -243,3 +243,85 @@ def test_promote_all_handles_empty_staging(glue):
         glue_client=glue,
     )
     assert results == []
+
+
+def test_swap_bootstraps_prod_when_table_does_not_exist(glue):
+    """First run: prod has no entry yet, the swap should create it
+    from the staging template with previous_metadata_location empty."""
+    _create_iceberg_table(
+        glue, STAGING_DB, "fct_orders",
+        "s3://bucket/staging/fct_orders/v3.json",
+    )
+    # No corresponding entry in PROD_DB
+
+    result = swap_metadata_pointer(
+        glue, CATALOG_ID, STAGING_DB, PROD_DB, "fct_orders"
+    )
+
+    assert result["swapped"] is True
+    assert result["bootstrapped"] is True
+    assert result["new_location"] == "s3://bucket/staging/fct_orders/v3.json"
+    assert result["previous_location"] is None
+
+    # Confirm prod now has the table pointing at staging's metadata
+    prod_after = glue.get_table(
+        CatalogId=CATALOG_ID,
+        DatabaseName=PROD_DB,
+        Name="fct_orders",
+    )["Table"]
+    assert prod_after["Parameters"]["metadata_location"] == \
+        "s3://bucket/staging/fct_orders/v3.json"
+    assert prod_after["Parameters"]["previous_metadata_location"] == ""
+    assert prod_after["Parameters"]["table_type"] == "ICEBERG"
+
+
+def test_promote_all_with_string_table_filter(glue):
+    """A bare-string filter should be normalised to a single-element list,
+    not expanded by `set()` to a set of characters."""
+    _create_iceberg_table(
+        glue, STAGING_DB, "fct_order_items_v2",
+        "s3://bucket/staging/fct/v3.json",
+    )
+    _create_iceberg_table(
+        glue, PROD_DB, "fct_order_items_v2",
+        "s3://bucket/prod/fct/v2.json",
+    )
+
+    results = promote_all(
+        catalog_id=CATALOG_ID,
+        staging_db=STAGING_DB,
+        prod_db=PROD_DB,
+        glue_client=glue,
+        table_filter="fct_order_items_v2",   # bare string, not a list
+    )
+
+    assert len(results) == 1
+    assert results[0]["table"] == "fct_order_items_v2"
+    assert results[0]["swapped"] is True
+
+
+def test_promote_all_bootstrap_via_full_flow(glue):
+    """End-to-end first-run scenario through promote_all."""
+    _create_iceberg_table(
+        glue, STAGING_DB, "fct_first_run",
+        "s3://bucket/staging/fct_first_run/v1.json",
+    )
+
+    results = promote_all(
+        catalog_id=CATALOG_ID,
+        staging_db=STAGING_DB,
+        prod_db=PROD_DB,
+        glue_client=glue,
+    )
+
+    assert len(results) == 1
+    assert results[0]["bootstrapped"] is True
+    assert results[0]["swapped"] is True
+
+    prod_after = glue.get_table(
+        CatalogId=CATALOG_ID,
+        DatabaseName=PROD_DB,
+        Name="fct_first_run",
+    )["Table"]
+    assert prod_after["Parameters"]["metadata_location"] == \
+        "s3://bucket/staging/fct_first_run/v1.json"

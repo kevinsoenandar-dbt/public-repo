@@ -69,11 +69,11 @@ def _aws_region() -> str:
 
 
 def _staging_db() -> str:
-    return Variable.get("glue_staging_database", default_var="analytics_staging")
+    return Variable.get("glue_staging_database", default_var="dbt_ksoenandar_staging")
 
 
 def _prod_db() -> str:
-    return Variable.get("glue_prod_database", default_var="analytics_prod")
+    return Variable.get("glue_prod_database", default_var="dbt_ksoenandar_prod")
 
 
 # ---------------------------------------------------------------------------

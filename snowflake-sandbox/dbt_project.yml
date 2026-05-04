@@ -20,8 +20,6 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 quoting:
-  database: false   # database can stay unquoted/uppercase
-  schema: true      # required for Glue CLD models
   identifier: true  # required for Glue CLD models
 
 models:

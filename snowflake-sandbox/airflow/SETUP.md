@@ -76,17 +76,17 @@ aws s3api put-bucket-versioning \
 
 ```bash
 aws glue create-database \
-  --database-input '{"Name":"analytics_staging"}' \
+  --database-input '{"Name":"dbt_ksoenandar_staging"}' \
   --region ap-southeast-2
 
 aws glue create-database \
-  --database-input '{"Name":"analytics_prod"}' \
+  --database-input '{"Name":"dbt_ksoenandar_prod"}' \
   --region ap-southeast-2
 ```
 
 The DAG's `promote_all()` function enumerates all Iceberg tables in
-`analytics_staging` and updates the same-named entries in
-`analytics_prod`.
+`dbt_ksoenandar_staging` and updates the same-named entries in
+`dbt_ksoenandar_prod`.
 
 ### A.3 Enable the AWS Glue Iceberg REST endpoint
 
@@ -163,10 +163,10 @@ Permissions policy (`snowflake-permissions.json`):
       ],
       "Resource": [
         "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:catalog",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/analytics_staging",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/analytics_prod",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/analytics_staging/*",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/analytics_prod/*"
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/dbt_ksoenandar_staging",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/dbt_ksoenandar_prod",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/dbt_ksoenandar_staging/*",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/dbt_ksoenandar_prod/*"
       ]
     }
   ]
@@ -214,10 +214,10 @@ Permissions policy (`airflow-glue-permissions.json`):
       ],
       "Resource": [
         "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:catalog",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/analytics_staging",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/analytics_prod",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/analytics_staging/*",
-        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/analytics_prod/*"
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/dbt_ksoenandar_staging",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:database/dbt_ksoenandar_prod",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/dbt_ksoenandar_staging/*",
+        "arn:aws:glue:ap-southeast-2:ACCOUNT_ID:table/dbt_ksoenandar_prod/*"
       ]
     }
   ]
@@ -262,7 +262,7 @@ For the AWS Glue Iceberg REST endpoint:
 CREATE CATALOG INTEGRATION glue_rest_integration
   CATALOG_SOURCE = ICEBERG_REST
   TABLE_FORMAT = ICEBERG
-  CATALOG_NAMESPACE = 'analytics_staging'      -- default namespace; per-DB overrides below
+  CATALOG_NAMESPACE = 'dbt_ksoenandar_staging'      -- default namespace; per-DB overrides below
   REST_CONFIG = (
     CATALOG_URI = 'https://glue.ap-southeast-2.amazonaws.com/iceberg'
     CATALOG_API_TYPE = AWS_GLUE
@@ -284,19 +284,19 @@ One for staging, one for prod, each pointing at its corresponding
 Glue database.
 
 ```sql
-CREATE DATABASE analytics_staging
+CREATE DATABASE dbt_ksoenandar_staging
   LINKED_CATALOG = (
     CATALOG = 'glue_rest_integration'
-    ALLOWED_NAMESPACES = ('analytics_staging')
+    ALLOWED_NAMESPACES = ('dbt_ksoenandar_staging')
     AUTO_REFRESH = TRUE
     REFRESH_INTERVAL_SECONDS = 30
   )
   EXTERNAL_VOLUME = 'cba_sandbox_iceberg_vol';
 
-CREATE DATABASE analytics_prod
+CREATE DATABASE dbt_ksoenandar_prod
   LINKED_CATALOG = (
     CATALOG = 'glue_rest_integration'
-    ALLOWED_NAMESPACES = ('analytics_prod')
+    ALLOWED_NAMESPACES = ('dbt_ksoenandar_prod')
     AUTO_REFRESH = TRUE
     REFRESH_INTERVAL_SECONDS = 30
   )
@@ -324,18 +324,18 @@ CREATE USER dbt_cloud_svc
 GRANT ROLE dbt_cloud_runner TO USER dbt_cloud_svc;
 
 -- Grants: dbt Cloud writes only to staging
-GRANT USAGE ON DATABASE analytics_staging TO ROLE dbt_cloud_runner;
-GRANT USAGE ON ALL SCHEMAS IN DATABASE analytics_staging TO ROLE dbt_cloud_runner;
+GRANT USAGE ON DATABASE dbt_ksoenandar_staging TO ROLE dbt_cloud_runner;
+GRANT USAGE ON ALL SCHEMAS IN DATABASE dbt_ksoenandar_staging TO ROLE dbt_cloud_runner;
 GRANT INSERT, UPDATE, DELETE, SELECT, TRUNCATE
-  ON ALL ICEBERG TABLES IN DATABASE analytics_staging TO ROLE dbt_cloud_runner;
+  ON ALL ICEBERG TABLES IN DATABASE dbt_ksoenandar_staging TO ROLE dbt_cloud_runner;
 GRANT INSERT, UPDATE, DELETE, SELECT, TRUNCATE
-  ON FUTURE ICEBERG TABLES IN DATABASE analytics_staging TO ROLE dbt_cloud_runner;
+  ON FUTURE ICEBERG TABLES IN DATABASE dbt_ksoenandar_staging TO ROLE dbt_cloud_runner;
 
 -- Read-only on prod
-GRANT USAGE ON DATABASE analytics_prod TO ROLE dbt_cloud_runner;
-GRANT USAGE ON ALL SCHEMAS IN DATABASE analytics_prod TO ROLE dbt_cloud_runner;
-GRANT SELECT ON ALL ICEBERG TABLES IN DATABASE analytics_prod TO ROLE dbt_cloud_runner;
-GRANT SELECT ON FUTURE ICEBERG TABLES IN DATABASE analytics_prod TO ROLE dbt_cloud_runner;
+GRANT USAGE ON DATABASE dbt_ksoenandar_prod TO ROLE dbt_cloud_runner;
+GRANT USAGE ON ALL SCHEMAS IN DATABASE dbt_ksoenandar_prod TO ROLE dbt_cloud_runner;
+GRANT SELECT ON ALL ICEBERG TABLES IN DATABASE dbt_ksoenandar_prod TO ROLE dbt_cloud_runner;
+GRANT SELECT ON FUTURE ICEBERG TABLES IN DATABASE dbt_ksoenandar_prod TO ROLE dbt_cloud_runner;
 
 -- Warehouse
 GRANT USAGE ON WAREHOUSE sandbox_wh TO ROLE dbt_cloud_runner;
@@ -379,7 +379,7 @@ dbt Cloud → Environments → Create environment:
 - **Type**: Deployment
 - **Name**: `Build to Staging (Iceberg)`
 - **Connection**: the Snowflake connection from C.1
-- **Default database**: `analytics_staging`
+- **Default database**: `dbt_ksoenandar_staging`
 - **Default schema**: choose per your dbt project conventions
 - **Role**: `dbt_cloud_runner`
 
@@ -424,8 +424,8 @@ Set these via the Airflow UI (Admin → Variables) or CLI:
 |---|---|
 | `glue_catalog_id` | Your AWS account ID (the Glue Catalog ID) |
 | `aws_region` | `ap-southeast-2` |
-| `glue_staging_database` | `analytics_staging` |
-| `glue_prod_database` | `analytics_prod` |
+| `glue_staging_database` | `dbt_ksoenandar_staging` |
+| `glue_prod_database` | `dbt_ksoenandar_prod` |
 | `dbt_cloud_account_id` | `127732` |
 | `dbt_cloud_build_staging_job_id` | The job ID from C.3 |
 
@@ -477,7 +477,7 @@ Once everything above is in place:
 1. **Verify Snowflake can see staging.**
 
    ```sql
-   SHOW ICEBERG TABLES IN DATABASE analytics_staging;
+   SHOW ICEBERG TABLES IN DATABASE dbt_ksoenandar_staging;
    ```
 
    Should be empty initially.
@@ -487,13 +487,13 @@ Once everything above is in place:
 
    In dbt Cloud, manually trigger the `build_staging` job. After it
    completes, Snowflake should see the new tables in
-   `analytics_staging` (auto-refresh picks up the catalogue change).
+   `dbt_ksoenandar_staging` (auto-refresh picks up the catalogue change).
 
 3. **Verify Glue side:**
 
    ```bash
    aws glue get-tables \
-     --database-name analytics_staging \
+     --database-name dbt_ksoenandar_staging \
      --query 'TableList[*].[Name,Parameters.metadata_location]'
    ```
 
@@ -511,7 +511,7 @@ Once everything above is in place:
 5. **Verify prod sees the promoted data:**
 
    ```sql
-   SELECT * FROM analytics_prod.<schema>.<table> LIMIT 10;
+   SELECT * FROM dbt_ksoenandar_prod.<schema>.<table> LIMIT 10;
    ```
 
    You should see the same rows that were in staging after the build.
@@ -520,7 +520,7 @@ Once everything above is in place:
 
    ```bash
    aws glue get-table \
-     --database-name analytics_prod \
+     --database-name dbt_ksoenandar_prod \
      --name <table_name> \
      --query 'Table.Parameters'
    ```
@@ -531,7 +531,7 @@ Once everything above is in place:
 
    ```python
    from glue_promote import rollback
-   rollback(catalog_id="ACCOUNT_ID", prod_db="analytics_prod", table_name="<table>")
+   rollback(catalog_id="ACCOUNT_ID", prod_db="dbt_ksoenandar_prod", table_name="<table>")
    ```
 
 ---

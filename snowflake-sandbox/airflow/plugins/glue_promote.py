@@ -17,6 +17,7 @@ import logging
 from typing import Iterable, Optional
 
 import boto3
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,12 @@ def list_iceberg_tables(
     when registering tables in Glue.
     """
     paginator = glue_client.get_paginator("get_tables")
+    # NEW: a bare string would expand to a set of characters via set(),
+    # so wrap single strings in a list before building the filter set.
+    if isinstance(table_filter, str):
+        table_filter = [table_filter]
     filter_set = set(table_filter) if table_filter is not None else None
+    
     tables: list[str] = []
 
     for page in paginator.paginate(
@@ -60,6 +66,10 @@ def swap_metadata_pointer(
 ) -> dict:
     """Point prod's Glue table entry at staging's current Iceberg metadata.
 
+    If the prod entry doesn't yet exist (first run / bootstrap), the prod
+    entry is created from the staging entry as a template, with
+    `previous_metadata_location` empty.
+
     Returns a dict describing the swap, including the previous and new
     metadata locations. Useful for logging, audit trail, and rollback.
     """
@@ -69,16 +79,33 @@ def swap_metadata_pointer(
         Name=table_name,
     )["Table"]
 
-    prod = glue_client.get_table(
-        CatalogId=catalog_id,
-        DatabaseName=prod_db,
-        Name=table_name,
-    )["Table"]
-
     new_metadata_location = staging["Parameters"]["metadata_location"]
-    current_prod_location = prod["Parameters"].get("metadata_location")
 
-    if new_metadata_location == current_prod_location:
+    # Try to read the prod entry. If it doesn't exist yet, this is a
+    # first-run / bootstrap case and we'll create the entry from the
+    # staging template instead of updating.
+    prod = None
+    current_prod_location = None
+    is_first_run = False
+    try:
+        prod = glue_client.get_table(
+            CatalogId=catalog_id,
+            DatabaseName=prod_db,
+            Name=table_name,
+        )["Table"]
+        current_prod_location = prod["Parameters"].get("metadata_location")
+    except ClientError as e:
+        if e.response.get("Error", {}).get("Code") != "EntityNotFoundException":
+            raise
+        is_first_run = True
+        logger.info(
+            "Bootstrap: %s.%s not found in prod; will create from staging template",
+            prod_db,
+            table_name,
+        )
+
+    # No-op short-circuit (only meaningful when prod already exists)
+    if not is_first_run and new_metadata_location == current_prod_location:
         logger.info(
             "No-op for %s.%s: staging and prod already match (%s)",
             prod_db,
@@ -90,42 +117,59 @@ def swap_metadata_pointer(
             "previous_location": current_prod_location,
             "new_location": new_metadata_location,
             "swapped": False,
+            "bootstrapped": False,
         }
 
+    # Build TableInput from prod (update path) or staging (create path)
+    template = staging if is_first_run else prod
+
     updated_parameters = {
-        **prod["Parameters"],
+        **template["Parameters"],
         "metadata_location": new_metadata_location,
         "previous_metadata_location": current_prod_location or "",
         "table_type": "ICEBERG",
     }
 
     table_input = {
-        "Name": prod["Name"],
-        "TableType": prod["TableType"],
+        "Name": table_name,
+        "TableType": template["TableType"],
         "Parameters": updated_parameters,
-        "StorageDescriptor": prod["StorageDescriptor"],
+        "StorageDescriptor": template["StorageDescriptor"],
     }
 
-    glue_client.update_table(
-        CatalogId=catalog_id,
-        DatabaseName=prod_db,
-        TableInput=table_input,
-        SkipArchive=False,  # retain TableVersion history for rollback
-    )
-
-    logger.info(
-        "Swapped %s.%s: %s -> %s",
-        prod_db,
-        table_name,
-        current_prod_location,
-        new_metadata_location,
-    )
+    if is_first_run:
+        glue_client.create_table(
+            CatalogId=catalog_id,
+            DatabaseName=prod_db,
+            TableInput=table_input,
+        )
+        logger.info(
+            "Bootstrapped %s.%s pointing at %s",
+            prod_db,
+            table_name,
+            new_metadata_location,
+        )
+    else:
+        glue_client.update_table(
+            CatalogId=catalog_id,
+            DatabaseName=prod_db,
+            TableInput=table_input,
+            SkipArchive=False,  # retain TableVersion history for rollback
+        )
+        logger.info(
+            "Swapped %s.%s: %s -> %s",
+            prod_db,
+            table_name,
+            current_prod_location,
+            new_metadata_location,
+        )
 
     return {
         "table": table_name,
         "previous_location": current_prod_location,
         "new_location": new_metadata_location,
         "swapped": True,
+        "bootstrapped": is_first_run,
     }
 
 
