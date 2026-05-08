@@ -1,6 +1,7 @@
 {{ config(
     materialized='table',
-    catalog_name='glue_catalog'
+    table_format='iceberg',
+    external_volume='ksoenandar_sandbox_iceberg_volume',
 )}}
 
 with
@@ -8,6 +9,12 @@ with
 order_items as (
 
     select * from {{ ref('stg_order_items') }}
+
+    {% if is_incremental() %}
+    
+        where order_item id not in (select order_item_id from {{ this }})
+
+    {% endif %}
 
 ),
 

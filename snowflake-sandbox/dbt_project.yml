@@ -5,6 +5,8 @@
 name: 'snowflake_sandbox'
 version: '1.0.0'
 
+profile: 'snowflake_fka'
+
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -18,9 +20,6 @@ snapshot-paths: ["snapshots"]
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
-
-quoting:
-  identifier: true  # required for Glue CLD models
 
 models:
   snowflake-sandbox:

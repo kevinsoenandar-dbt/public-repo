@@ -71,6 +71,8 @@ models:
           - include: all
             exclude: [supply_cost, product_name]
   - name: dim_order
+    config:
+      tags: ['leaf']
     columns:
       - name: order_id
         description: The unique key of the dim_order table.

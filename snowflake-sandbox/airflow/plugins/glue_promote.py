@@ -177,7 +177,7 @@ def promote_all(
     catalog_id: str,
     staging_db: str,
     prod_db: str,
-    region_name: str = "ap-southeast-2",
+    region_name: str = "us-east-2",
     table_filter: Optional[Iterable[str]] = None,
     glue_client=None,
 ) -> list[dict]:
