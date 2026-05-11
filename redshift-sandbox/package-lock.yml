@@ -1,0 +1,8 @@
+packages:
+  - name: dbt_utils
+    package: dbt-labs/dbt_utils
+    version: 1.3.1
+  - git: https://github.com/dbt-labs/dbt-cost-optimization.git
+    name: dbt_cost_optimization
+    revision: 2def119dee16f1332a72ef8cbf0af3adf275f58a
+sha1_hash: 364e08fb8f71160caccdc262f39ec09db30549ec
