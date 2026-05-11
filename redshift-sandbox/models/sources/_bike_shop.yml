@@ -24,8 +24,9 @@ sources:
             data_tests:
               - not_null
               - relationships:
-                  field: id
-                  to: source("bike_shop", "customers")
+                  arguments:
+                    field: id
+                    to: source("bike_shop", "customers")
       - name: order_products
         description: One record per product that is part of an order
         columns:
@@ -35,16 +36,18 @@ sources:
               - unique
           - name: product_id
             data_tests:
-            - not_null
-            - relationships:
-                field: id
-                to: source("bike_shop", "products")
+              - not_null
+              - relationships:
+                  arguments:
+                    field: id
+                    to: source("bike_shop", "products")
           - name: order_id
             data_tests:
-            - not_null
-            - relationships:
-                field: id
-                to: source("bike_shop", "orders")
+              - not_null
+              - relationships:
+                  arguments:
+                    field: id
+                    to: source("bike_shop", "orders")
       - name: products
         description: One record per SKU for items sold in stores
         columns:
