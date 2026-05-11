@@ -7,14 +7,15 @@ models:
         config:
           meta:
             is_sensitive: false
-        tags:
-          - sensitive
+          tags:
+            - sensitive
         data_tests:
           - accepted_values:
-              values:
-                - Male
-                - Female
-                - Non-binary
+              arguments:
+                values:
+                  - Male
+                  - Female
+                  - Non-binary
   - name: stg_bike_shop__order_products
     description: Individual products that make up an order, one row per product.
   - name: stg_bike_shop__orders
