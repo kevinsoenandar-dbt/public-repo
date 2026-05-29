@@ -1,0 +1,39 @@
+name: 'redshift_cost_opt_sandbox'
+version: '0.1.0'
+config-version: 2
+
+profile: 'redshift_cost_opt_sandbox'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+require-dbt-version: [">=1.7.0"]
+
+# Local-build defaults. The project layers itself materializes as documented:
+#   staging       -> view
+#   intermediate  -> view (with one exception for chain-depth fixture)
+#   marts         -> explicit per-model config (table or incremental)
+models:
+  redshift_cost_opt_sandbox:
+    staging:
+      +materialized: view
+      +schema: stg
+    intermediate:
+      +materialized: view
+      +schema: int
+    marts:
+      +schema: marts
+
+vars:
+  # Tighten/loosen these in the cost-optimization package when running against
+  # this project. They're surfaced here for visibility, not consumed locally.
+  materialization_lookback_days: 7
+  incremental_lookback_days: 14

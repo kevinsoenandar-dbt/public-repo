@@ -1,0 +1,101 @@
+version: 2
+
+models:
+  - name: stg_tpch__regions
+    description: Reference regions. ~5 rows. Materialized as view.
+    columns:
+      - name: region_id
+        data_tests: [not_null, unique]
+      - name: region_name
+        data_tests: [not_null]
+
+  - name: stg_tpch__nations
+    description: Reference nations. ~25 rows. FK to regions. Materialized as view.
+    columns:
+      - name: nation_id
+        data_tests: [not_null, unique]
+      - name: nation_name
+        data_tests: [not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__regions')
+              field: region_id
+
+  - name: stg_tpch__suppliers
+    description: Supplier directory. ~100K rows.
+    columns:
+      - name: supplier_id
+        data_tests: [not_null, unique]
+      - name: nation_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__nations')
+              field: nation_id
+
+  - name: stg_tpch__customers
+    description: Customer directory. ~1.5M rows (~250 MB at SF=10).
+    columns:
+      - name: customer_id
+        data_tests: [not_null, unique]
+      - name: nation_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__nations')
+              field: nation_id
+
+  - name: stg_tpch__parts
+    description: Parts catalog. ~2M rows.
+    columns:
+      - name: part_id
+        data_tests: [not_null, unique]
+
+  - name: stg_tpch__partsupp
+    description: Many-to-many between part and supplier. ~8M rows.
+    columns:
+      - name: part_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__parts')
+              field: part_id
+      - name: supplier_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__suppliers')
+              field: supplier_id
+
+  - name: stg_tpch__orders
+    description: Customer orders. ~15M rows (~1.7 GB at SF=10).
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__customers')
+              field: customer_id
+
+  - name: stg_tpch__lineitem
+    description: >
+      Line items per order. ~60M rows (~7 GB at SF=10). l_shipdate is renamed to
+      `event_date` so the cost-optimization package's event_time detection picks
+      it up and routes downstream marts that use this column toward the
+      microbatch tier.
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_tpch__orders')
+              field: order_id
+      - name: line_number
+        data_tests: [not_null]
+      - name: event_date
+        description: Aliased from l_shipdate to trigger event_time detection.
+        data_tests: [not_null]
