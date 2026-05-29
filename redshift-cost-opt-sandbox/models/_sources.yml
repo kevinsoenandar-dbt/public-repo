@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: tpch
+    description: >
+      TPC-H sample dataset at scale factor 10. Provided by AWS and loaded into
+      the `tpch` database, `raw_data` schema, in this Redshift environment.
+    database: tpch
+    schema: raw_data
+    tables:
+      - name: region
+        description: 5 rows. Reference table of geographic regions.
+      - name: nation
+        description: 25 rows. Reference table of nations, FK to region.
+      - name: supplier
+        description: ~100K rows. Supplier directory.
+      - name: customer
+        description: ~1.5M rows (~250 MB at SF=10).
+      - name: part
+        description: ~2M rows (~30 MB at SF=10). Parts catalog.
+      - name: partsupp
+        description: ~8M rows (~120 MB at SF=10). Many-to-many between part and supplier.
+      - name: orders
+        description: ~15M rows (~1.7 GB at SF=10). Customer orders.
+      - name: lineitem
+        description: ~60M rows (~7 GB at SF=10). Line items per order.
