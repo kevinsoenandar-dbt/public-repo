@@ -20,9 +20,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__regions')
-              field: region_id
-
+              arguments:
+                to: ref('stg_tpch__regions')
+                field: region_id
   - name: stg_tpch__suppliers
     description: Supplier directory. ~100K rows.
     columns:
@@ -32,9 +32,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__nations')
-              field: nation_id
-
+              arguments:
+                to: ref('stg_tpch__nations')
+                field: nation_id
   - name: stg_tpch__customers
     description: Customer directory. ~1.5M rows (~250 MB at SF=10).
     columns:
@@ -44,9 +44,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__nations')
-              field: nation_id
-
+              arguments:
+                to: ref('stg_tpch__nations')
+                field: nation_id
   - name: stg_tpch__parts
     description: Parts catalog. ~2M rows.
     columns:
@@ -60,15 +60,16 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__parts')
-              field: part_id
+              arguments:
+                to: ref('stg_tpch__parts')
+                field: part_id
       - name: supplier_id
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__suppliers')
-              field: supplier_id
-
+              arguments:
+                to: ref('stg_tpch__suppliers')
+                field: supplier_id
   - name: stg_tpch__orders
     description: Customer orders. ~15M rows (~1.7 GB at SF=10).
     columns:
@@ -78,9 +79,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__customers')
-              field: customer_id
-
+              arguments:
+                to: ref('stg_tpch__customers')
+                field: customer_id
   - name: stg_tpch__lineitem
     description: >
       Line items per order. ~60M rows (~7 GB at SF=10). l_shipdate is renamed to
@@ -92,8 +93,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_tpch__orders')
-              field: order_id
+              arguments:
+                to: ref('stg_tpch__orders')
+                field: order_id
       - name: line_number
         data_tests: [not_null]
       - name: event_date
