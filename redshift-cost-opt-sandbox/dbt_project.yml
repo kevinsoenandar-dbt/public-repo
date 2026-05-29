@@ -9,7 +9,6 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 test-paths: ["tests"]
-target-path: "target"
 clean-targets:
   - "target"
   - "dbt_packages"
@@ -23,11 +22,10 @@ require-dbt-version: [">=1.7.0"]
 #   marts         -> explicit per-model config (table or incremental)
 models:
   redshift_cost_opt_sandbox:
+    +bind: false
     staging:
-      +materialized: view
       +schema: stg
     intermediate:
-      +materialized: view
       +schema: int
     marts:
       +schema: marts
@@ -37,3 +35,5 @@ vars:
   # this project. They're surfaced here for visibility, not consumed locally.
   materialization_lookback_days: 7
   incremental_lookback_days: 14
+flags:
+  require_generic_test_arguments_property: true
