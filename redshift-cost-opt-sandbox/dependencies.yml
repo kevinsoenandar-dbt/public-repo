@@ -1,3 +1,3 @@
 packages:
   - git: "https://{{env_var('DBT_ENV_SECRET_GIT_CREDENTIAL')}}@github.com/dbt-labs/dbt-cost-optimization-package"
-    revision: 2ecb37a1ac656eb1537bb08836b6ba2d34dd751c
+    revision: 74a8b41b3b143da0ab4b7cdd853a08169180282d
