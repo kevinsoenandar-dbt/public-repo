@@ -1,0 +1,6 @@
+customer_id,source_updated_at,customer_name,status,customer_tier,credit_limit
+C001,2024-06-01 09:00:00,Alice Smith,inactive,gold,2200
+C004,2024-06-01 09:00:00,Dan Patel,active,gold,1800
+C005,2024-06-01 09:00:00,Eva Green,active,silver,1400
+C006,2024-06-01 09:00:00,Fatima Khan,active,bronze,1100
+C007,2024-06-01 09:00:00,George Brown,prospect,bronze,600

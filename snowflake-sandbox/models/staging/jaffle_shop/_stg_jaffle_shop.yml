@@ -28,13 +28,15 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_orders')
-              field: order_id
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
   - name: stg_orders
     description: Order data with basic cleaning and transformation applied, one row per order.
     data_tests:
       - dbt_utils.expression_is_true:
-          expression: "order_total - tax_paid = subtotal"
+          arguments:
+            expression: "order_total - tax_paid = subtotal"
     columns:
       - name: order_id
         description: The unique key for each order.
@@ -68,29 +70,9 @@ unit_tests:
     given:
       - input: source('jaffle_shop', 'raw_stores')
         rows:
-          - {
-              id: 1,
-              name: "Vice City",
-              tax_rate: 0.2,
-              opened_at: "2016-09-01T00:00:00",
-            }
-          - {
-              id: 2,
-              name: "San Andreas",
-              tax_rate: 0.1,
-              opened_at: "2079-10-27T23:59:59.9999",
-            }
+          - {id: 1, name: "Vice City", tax_rate: 0.2, opened_at: "2016-09-01T00:00:00"}
+          - {id: 2, name: "San Andreas", tax_rate: 0.1, opened_at: "2079-10-27T23:59:59.9999"}
     expect:
       rows:
-        - {
-            location_id: 1,
-            location_name: "Vice City",
-            tax_rate: 0.2,
-            opened_date: "2016-09-01",
-          }
-        - {
-            location_id: 2,
-            location_name: "San Andreas",
-            tax_rate: 0.1,
-            opened_date: "2079-10-27",
-          }
+        - {location_id: 1, location_name: "Vice City", tax_rate: 0.2, opened_date: "2016-09-01"}
+        - {location_id: 2, location_name: "San Andreas", tax_rate: 0.1, opened_date: "2079-10-27"}

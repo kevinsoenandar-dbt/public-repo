@@ -45,9 +45,10 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values:
-                - Champions
-                - Loyal Customers
-                - Potential Loyalists
-                - At-Risk
-                - Hibernating
+              arguments:
+                values:
+                  - Champions
+                  - Loyal Customers
+                  - Potential Loyalists
+                  - At-Risk
+                  - Hibernating

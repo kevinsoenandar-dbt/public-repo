@@ -1,0 +1,64 @@
+seeds:
+  - name: scd_customer_profile_snapshot_1
+    description: >
+      Initial type 1 snapshot fixture for testing dw_table_scd. One current row
+      per customer_id.
+    config:
+      column_types:
+        customer_id: varchar(20)
+        source_updated_at: timestamp_ntz
+        customer_name: varchar(100)
+        status: varchar(20)
+        customer_tier: varchar(20)
+        credit_limit: number(12,2)
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+      - name: source_updated_at
+        data_tests:
+          - not_null
+
+  - name: scd_customer_profile_snapshot_2
+    description: >
+      Second type 1 snapshot fixture for testing dw_table_scd. Contains updates,
+      one insert, and one delete relative to snapshot 1.
+    config:
+      column_types:
+        customer_id: varchar(20)
+        source_updated_at: timestamp_ntz
+        customer_name: varchar(100)
+        status: varchar(20)
+        customer_tier: varchar(20)
+        credit_limit: number(12,2)
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+      - name: source_updated_at
+        data_tests:
+          - not_null
+
+
+  - name: scd_customer_profile_snapshot_3
+    description: >
+      Third type 1 snapshot fixture for testing dw_table_scd. Contains updates,
+      two inserts, and one delete relative to snapshot 2.
+    config:
+      column_types:
+        customer_id: varchar(20)
+        source_updated_at: timestamp_ntz
+        customer_name: varchar(100)
+        status: varchar(20)
+        customer_tier: varchar(20)
+        credit_limit: number(12,2)
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+      - name: source_updated_at
+        data_tests:
+          - not_null

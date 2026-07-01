@@ -1,0 +1,16 @@
+functions:
+  - language: sql
+    name: udf_column_type
+    description: UDF that checks the column type for dbt models
+    arguments:
+      - name: col
+        data_type: string
+        description: The column name that we are checking
+      - name: p
+        data_type: int
+        description: The precision of the column when the column is of a number type
+      - name: s
+        data_type: int
+        description: The scale of the column when the column is of a number type
+    returns: 
+      data_type: string

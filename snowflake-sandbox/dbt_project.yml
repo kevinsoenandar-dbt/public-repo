@@ -1,4 +1,3 @@
-
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
@@ -6,17 +5,17 @@ name: 'snowflake_sandbox'
 version: '1.0.0'
 
 dbt-cloud:
-    project-id: 437878
+  project-id: 437878
 
 # These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
+# The `model-paths` config, for example, states that models in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
+function-paths: ["functions"]
 
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
@@ -40,7 +39,10 @@ models:
 saved-queries:
   all_saved_queries:
     config:
-      +cache: enabled
+      +cache:
+        enabled: true
 
 on-run-end:
   - "{{ grant_revoke_schema_usage() }}"
+flags:
+  require_generic_test_arguments_property: true
