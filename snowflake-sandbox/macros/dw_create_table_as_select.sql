@@ -23,7 +23,7 @@
     {# /* get the key column, if not set then all the data column except those not for change tracking */ #}
     {%- set key_column_names = dw_get_key_column_names(sql_columns, natural_keys, exclude_names) -%}
 
-    {%- if transform_type in ["2_1", "2_2"] and dedup_change_history is not none -%}
+    {%- if transform_type in ["2_1", "2_2"] and dedup_change_history -%}
         {# /* get data colomns for change tracking */ #}
         {%- for name in key_column_names -%}
             {%- do exclude_names.append(name | lower) -%}
@@ -40,7 +40,7 @@
         {%- if transform_type in ["2_1", "2_2"] %}
         select 
             *
-            {%- if dedup_change_history is not none %}
+            {%- if dedup_change_history %}
             , lag(dw_hash_diff) over (partition by {{ key_column_names | join(", ") }} order by dw_strt_ts asc) as dw_hash_diff_prev
                 {%- if check_delete %} , lag(dw_rec_del_ind) over (partition by {{ key_column_names | join(", ") }} order by dw_strt_ts asc) as dw_rec_del_ind_prev  {%- endif %}
             {%- endif %}
@@ -49,7 +49,7 @@
         {%- endif %}
         select 
             {{ dw_generate_hash_key(key_column_names, hash_type) }} as dw_hash_key
-            {%- if transform_type in ["2_1", "2_2"] and dedup_change_history is not none %}
+            {%- if transform_type in ["2_1", "2_2"] and dedup_change_history %}
                 , {{ dw_generate_hash_key(change_column_names, hash_type) }} as dw_hash_diff
             {%- endif %}
             , {% if rollup_window is not none -%} date_trunc({{ rollup_window }}, {%- endif -%}
@@ -127,7 +127,7 @@
     {% if backup_relation is not none -%}
     left join backup_table b on s.dw_hash_key = b.dw_hash_key and s.dw_strt_ts = b.dw_strt_ts
     {% endif -%}
-    {% if transform_type in ["2_1", "2_2"] and dedup_change_history is not none -%} 
+    {% if transform_type in ["2_1", "2_2"] and dedup_change_history -%} 
     where 1=0
     or s.dw_hash_diff_prev is null 
     or s.dw_hash_diff_prev <> s.dw_hash_diff
