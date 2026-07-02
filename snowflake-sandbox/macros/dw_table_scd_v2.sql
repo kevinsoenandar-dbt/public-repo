@@ -77,12 +77,14 @@
 
     {#- /* v2: retain_dw_process_ts on a full refresh needs a backup of the existing target before it is replaced. */ -#}
     {% if (retain_dw_process_ts in [ "all rows", "exclude changed active"] and  should_full_refresh() and transform_type == "2_2" and diff_type == 'hash' and existing_relation is not none) -%}
-    {#- /* TODO: create this backup relation before dw_create_table_as_select references it. */ -#}
     {% set tz_local = modules.pytz.timezone('Australia/Perth') -%}
     {% set dt_local = modules.datetime.datetime.now(tz_local) -%}
     {% set today = dt_local.strftime("%Y%m%d") -%}
     {% set backup_table_name = this.name ~ '_bkp_' ~ today %}
     {% set backup_relation = api.Relation.create(database=this.database, schema=this.schema, identifier=backup_table_name, type='table') -%}
+    {% call statement("backup_target_relation") %}
+        create or replace temporary table {{ backup_relation }} clone {{ target_relation }}
+    {% endcall %}
     {% else -%}
     {% set backup_relation = none -%}
     {% endif -%}
