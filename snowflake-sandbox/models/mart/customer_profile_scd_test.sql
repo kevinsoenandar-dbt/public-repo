@@ -11,7 +11,7 @@
         'diff_type': "hash",
         'source_ts': "source_updated_at",
         'check_delete': true,
-        'table_creation': true,
+        'table_creation': false,
         'dbt_hash_case_sensitive': false
     },
     static_analysis = 'off'
@@ -24,6 +24,9 @@ select
     source_updated_at,
     customer_name,
     status,
+    {% if fixture_seed == 'scd_customer_profile_snapshot_4' -%}
+    region,
+    {% endif -%}
     customer_tier,
     case when customer_tier = 'bronze' then 'low'
         when customer_tier = 'silver' then 'medium'
@@ -31,4 +34,3 @@ select
     else 'unknown' end as classification,
     credit_limit
 from {{ ref(fixture_seed) }}
-

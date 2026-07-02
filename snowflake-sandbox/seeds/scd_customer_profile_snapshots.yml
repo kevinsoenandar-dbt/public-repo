@@ -62,3 +62,26 @@ seeds:
       - name: source_updated_at
         data_tests:
           - not_null
+
+  - name: scd_customer_profile_snapshot_4
+    description: >
+      Fourth type 1 snapshot fixture for testing dw_table_scd. Adds the region
+      column between status and customer_tier, with updates, one insert, and one
+      delete relative to snapshot 3.
+    config:
+      column_types:
+        customer_id: varchar(20)
+        source_updated_at: timestamp_ntz
+        customer_name: varchar(100)
+        status: varchar(20)
+        region: varchar(50)
+        customer_tier: varchar(20)
+        credit_limit: number(12,2)
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+      - name: source_updated_at
+        data_tests:
+          - not_null
