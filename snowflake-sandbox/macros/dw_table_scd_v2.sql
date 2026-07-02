@@ -35,6 +35,14 @@
     {%- set iics_delayed_record = dw_validate_iics_delayed_record(config) -%}
     {%- set retain_dw_process_ts = dw_validate_retain_process_ts(config) -%}
 
+    {%- if version_using_sort_sequence and source_type != "cdc" -%}
+        {%- set error_msg -%}
+        Invalid version_using_sort_sequence value are provided: {{ version_using_sort_sequence }}
+        Can only be set when source_type is "cdc" because it requires the cdc_seq_no source column.
+        {%- endset -%}
+        {%- do exceptions.raise_compiler_error(error_msg) -%}
+    {%- endif -%}
+
     {%- if source_type == "cdc" -%}
         {%- set check_delete = True -%}
         {%- set dedup_change_history = False -%}
