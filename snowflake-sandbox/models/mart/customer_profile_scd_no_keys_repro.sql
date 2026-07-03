@@ -1,9 +1,8 @@
 {{ config(
     materialized = "dw_table_scd_v2",
-    description = "Simple fixture-backed model for testing the dw_table_scd custom materialization.",
+    description = "Temporary repro model for testing dw_table_scd_v2 behavior when natural_keys is omitted.",
     meta = {
         'transform_type': "2_2",
-        'natural_keys': ["customer_id"],
         'exclude_field_change': [],
         'source_type': "full",
         'hash_type': "md5_binary",
@@ -11,7 +10,7 @@
         'diff_type': "hash",
         'source_ts': "source_updated_at",
         'check_delete': true,
-        'table_creation': false,
+        'version_using_sort_sequence': false,
         'dbt_hash_case_sensitive': false
     },
     static_analysis = 'off'
@@ -24,13 +23,6 @@ select
     source_updated_at,
     customer_name,
     status,
-    {% if fixture_seed in ['scd_customer_profile_snapshot_4', 'scd_customer_profile_snapshot_5'] -%}
-    region,
-    {% endif -%}
     customer_tier,
-    -- case when customer_tier = 'bronze' then 'low'
-    --     when customer_tier = 'silver' then 'medium'
-    --     when customer_tier = 'gold' then 'high'
-    -- else 'unknown' end as classification,
     credit_limit
 from {{ ref(fixture_seed) }}

@@ -1,0 +1,7 @@
+customer_id,source_updated_at,customer_name,status,region,customer_tier,credit_limit
+C001,2024-08-01 09:00:00,Alice Smith,temporarily_inactive_customer,VIC,gold,2200
+C004,2024-08-01 09:00:00,Dan Patel,active,WA,gold,2200
+C005,2024-08-01 09:00:00,Eva Green,active,NSW,gold,2000
+C006,2024-08-01 09:00:00,Fatima Khan,inactive,QLD,silver,1500
+C008,2024-08-01 09:00:00,Hannah White,active,VIC,silver,1000
+C009,2024-08-01 09:00:00,Ivan Miller,active,TAS,bronze,650
