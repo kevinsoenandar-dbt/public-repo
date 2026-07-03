@@ -23,7 +23,8 @@
     {# /* get the key column, if not set then all the data column except those not for change tracking */ #}
     {%- set key_column_names = dw_get_key_column_names(sql_columns, natural_keys, exclude_names) -%}
 
-    {%- if transform_type in ["2_1", "2_2"] and dedup_change_history -%}
+    {#- /* dw_hash_diff is persisted for hash comparison, and also used transiently for source history deduplication. */ -#}
+    {%- if diff_type == 'hash' or (transform_type in ["2_1", "2_2"] and dedup_change_history) -%}
         {# /* get data colomns for change tracking */ #}
         {%- for name in key_column_names -%}
             {%- do exclude_names.append(name | lower) -%}
@@ -49,7 +50,8 @@
         {%- endif %}
         select 
             {{ dw_generate_hash_key(key_column_names, hash_type) }} as dw_hash_key
-            {%- if transform_type in ["2_1", "2_2"] and dedup_change_history %}
+            {#- /* Generate dw_hash_diff when it is either persisted for hash diffing or needed for dedup comparison. */ -#}
+            {%- if diff_type == 'hash' or (transform_type in ["2_1", "2_2"] and dedup_change_history) %}
                 , {{ dw_generate_hash_key(change_column_names, hash_type) }} as dw_hash_diff
             {%- endif %}
             , {% if rollup_window is not none -%} date_trunc({{ rollup_window }}, {%- endif -%}
