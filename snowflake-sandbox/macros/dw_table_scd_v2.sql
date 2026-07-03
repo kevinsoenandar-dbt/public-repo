@@ -78,6 +78,21 @@
     {%- set sql_relation = dw_create_staging_table(target_relation, sql, "__dw_sql") -%} 
     {%- set sql_columns = dw_get_column_in_relation(sql_relation) -%}
 
+    {#- /* v2: infer omitted natural_keys once so full-refresh and incremental helpers use the same key list. */ -#}
+    {#- /* Match dw_create_table_as_select inference by excluding control, CDC, and non-change-tracked fields from inferred keys. */ -#}
+    {%- set natural_key_exclude_names = dw_reserved_column_names() -%}
+    {%- if source_type == "cdc" -%}
+        {%- for name in dw_cdc_column_names() -%}
+            {%- do natural_key_exclude_names.append(name) -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- if exclude_field_change is not none -%}
+        {%- for name in exclude_field_change -%}
+            {%- do natural_key_exclude_names.append(name | lower) -%}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- set natural_keys = dw_get_key_column_names(sql_columns, natural_keys, natural_key_exclude_names) -%}
+
     {% if execute 
             and retain_dw_process_ts | lower in ["all rows", "exclude changed active"]%}
         {{ log(this ~ ' retain_dw_process_ts is ' ~ retain_dw_process_ts, info=True) }}
@@ -185,7 +200,10 @@
     {#- /* if the transform type is "1" then there's no dw_strt_ts column hence skipping that one*/ -#}
     {%- if transform_type | lower in [ "2_1"] %}
 
-        {%- set natural_keys = dw_get_list(dw_get_meta(config).get("natural_keys", none)) -%}
+        {#- /* Reuse normalized natural_keys from the materialization path; only fall back for blank-SQL/no-op runs. */ -#}
+        {%- if natural_keys is not defined -%}
+            {%- set natural_keys = dw_get_list(dw_get_meta(config).get("natural_keys", none)) -%}
+        {%- endif -%}
         {%- set sql_columns = dw_get_column_in_relation(target_relation) -%}
         {%- set partition_cols -%}
             {% for col in natural_keys -%}
