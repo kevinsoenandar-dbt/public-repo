@@ -1,0 +1,20 @@
+models:
+  - name: foo
+    description: "Dummy."
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id1
+        description: "Business Key: Unique identifier for the service"
+        data_type: string
+        data_tests:
+          - not_null
+      - name: load_datetime
+        data_type: timestamp
+        config:
+            meta:
+              business_column_name: "Load Datetime"
+              is_enriched: true
+              privacy_tag: "Assessed - No tag applicable"
+              data_element_classification: "Data Element"

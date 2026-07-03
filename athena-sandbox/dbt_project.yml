@@ -15,8 +15,15 @@ clean-targets:
 
 models:
   athena_sandbox:
+    +on_schema_change: append_new_columns
     example:
       +materialized: view
+    test:
+      +materialized: table
+      +table_type: iceberg
+      +format: parquet
+      +contract:
+        enforced: true
 
 seeds:
   athena_sandbox:
