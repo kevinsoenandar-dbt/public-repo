@@ -81,7 +81,8 @@
             , s.is_null
             , s.comment
             , t.column_type as target_type
-            , (case when t.is_null <> s.is_null then true else false end) as change_type
+            -- change = 3 can include type and/or comment drift; downstream DDL generation needs accurate per-field flags.
+            , (case when t.column_type <> s.column_type then true else false end) as change_type
             , (case when t.is_null <> s.is_null then true else false end) as change_is_null
             , (case when t.comment <> s.comment then true else false end) as change_comment
         from source_metadata s
@@ -110,44 +111,48 @@
 {%- endmacro %}
 
 {% macro dw_generate_column_alter(columns, target_relation) -%}
-    {%- set add_column_string -%}
-        {%- for col in columns if col.change == 1 -%}
-            column {{ col.name }} {{ col.type }}
+    {#- /* Build discrete DDL statements so mixed add/type/nullability/comment changes do not rely on brittle comma placement. */ -#}
+    {%- set statements = [] -%}
+
+    {#- /* Add new source columns to the target, preserving detected type, nullability, and comment metadata. */ -#}
+    {%- for col in columns if col.change == 1 -%}
+        {%- set add_column_statement -%}
+            alter table {{ target_relation }}
+            add column {{ col.name }} {{ col.type }}
             {%- if not col.is_null %} not null{%- endif %}
-            {%- if col.comment != '' %} comment {{ col.comment }}{%- endif -%}
-            {{", " if not loop.last}}
-        {%- endfor -%}
-    {%- endset -%}
+            {%- if col.comment != '' %} comment '{{ col.comment | replace("'", "''") }}'{%- endif %}
+        {%- endset -%}
+        {%- do statements.append(add_column_statement) -%}
+    {%- endfor -%}
 
-    {%- set is_changed = False -%}
+    {#- Relax target nullability when the source no longer guarantees a non-null value. -#}
+    {%- for col in columns if col.change == 2 -%}
+        {%- set drop_not_null_statement -%}
+            alter table {{ target_relation }}
+            alter column {{ col.name }} drop not null
+        {%- endset -%}
+        {%- do statements.append(drop_not_null_statement) -%}
+    {%- endfor -%}
 
-    {%- set alter_column_string -%}
-        {%- for col in columns if col.change == 2 -%}
-            column {{ col.name }} drop not null{{", " if not loop.last}}
-            {%- set is_changed = True -%}
-        {%- endfor -%}
-        {% if is_change -%}, {% endif -%}
-        {%- for col in columns if col.change == 3 and col.change_type -%}
-            column {{ col.name }} type {{ col.type }}{{", " if not loop.last}}
-            {%- set is_changed = True -%}
-        {%- endfor -%}
-        {% if is_change -%}, {% endif -%}
-        {%- for col in columns if col.change == 3 and col.change_comment -%}
-            column {{ col.name }} comment {% if col.comment == '' -%}null{%- else -%} col.comment {%- endif %}{{", " if not loop.last}}
-        {%- endfor -%}
-    {%- endset -%}
+    {#- Apply detected type changes, including compatible expansions such as varchar(20) to varchar(50). -#}
+    {%- for col in columns if col.change == 3 and col.change_type -%}
+        {%- set alter_type_statement -%}
+            alter table {{ target_relation }}
+            alter column {{ col.name }} type {{ col.type }}
+        {%- endset -%}
+        {%- do statements.append(alter_type_statement) -%}
+    {%- endfor -%}
 
-    {%- set column_update_string -%}
-        {%- if add_column_string != '' -%}
-            alter table {{ target_relation }} 
-            add {{ add_column_string }}
-        {%- endif %}
-        {%- if is_change -%}; {%- endif %}
-        {% if alter_column_string != '' -%}
-            alter table {{ target_relation }} 
-            alter {{ alter_column_string }}
-        {%- endif -%}
-    {%- endset -%}
+    {#- Apply comment changes separately so empty comments can be cleared with comment null. -#}
+    {%- for col in columns if col.change == 3 and col.change_comment -%}
+        {%- set alter_comment_statement -%}
+            alter table {{ target_relation }}
+            alter column {{ col.name }} comment {% if col.comment == '' -%}null{%- else -%}'{{ col.comment | replace("'", "''") }}'{%- endif %}
+        {%- endset -%}
+        {%- do statements.append(alter_comment_statement) -%}
+    {%- endfor -%}
+
+    {%- set column_update_string = statements | join(";\n") -%}
 
     {%- do return(column_update_string) -%}
 {%- endmacro %}
