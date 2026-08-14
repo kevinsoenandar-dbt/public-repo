@@ -2,8 +2,6 @@ name: 'redshift_cost_opt_sandbox'
 version: '0.1.0'
 config-version: 2
 
-profile: 'redshift_cost_opt_sandbox'
-
 model-paths: ["models"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
@@ -35,5 +33,9 @@ vars:
   # this project. They're surfaced here for visibility, not consumed locally.
   materialization_lookback_days: 7
   incremental_lookback_days: 14
+  incremental_candidates_min_build_time_sec: 5        # was 300
+  incremental_candidates_min_size_gb: 1                # was 2 (fct_lineitem clears this either way)
+  incremental_candidates_min_compute_waste_score: 0.05 # was 5
+  incremental_candidates_min_compute_waste_avg_build_sec: 1  # was 30
 flags:
   require_generic_test_arguments_property: true
