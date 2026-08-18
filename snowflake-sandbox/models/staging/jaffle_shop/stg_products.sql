@@ -18,7 +18,7 @@ renamed as (
         sku as product_id,
 
         ---------- text
-        name::varchar(5) as product_name,
+        nam as product_name,
         type as product_type,
         description as product_description,
 
