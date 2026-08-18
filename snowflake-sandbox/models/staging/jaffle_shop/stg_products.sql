@@ -1,3 +1,7 @@
+{{ config(
+    on_error='continue'
+)}}
+
 with
 
 source as (
@@ -14,7 +18,7 @@ renamed as (
         sku as product_id,
 
         ---------- text
-        name as product_name,
+        name::varchar(5) as product_name,
         type as product_type,
         description as product_description,
 
