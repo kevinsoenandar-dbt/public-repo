@@ -1,5 +1,5 @@
 packages:
 - git: https://{{env_var('DBT_ENV_SECRET_GIT_CREDENTIAL')}}@github.com/dbt-labs/dbt-cost-optimization-package
   name: dbt_cost_optimization_package
-  revision: 09f35b9abf11fd467c9f59b28882acea19a75961
-sha1_hash: 7e8250f4698a1b34b161541f2c2c40939266b810
+  revision: d4e421806e4bd8987d2cbcd1344ab631dd474633
+sha1_hash: daca22cc468132e7d10833d80c3cbc7305d311bd
