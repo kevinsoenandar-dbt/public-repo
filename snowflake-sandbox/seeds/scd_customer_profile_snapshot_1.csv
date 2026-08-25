@@ -1,0 +1,5 @@
+customer_id,source_updated_at,customer_name,status,customer_tier,credit_limit
+C001,2024-04-01 09:00:00,Alice Smith,active,bronze,1000
+C002,2024-04-01 09:00:00,Bob Jones,active,silver,2500
+C003,2024-04-01 09:00:00,Carol Lee,prospect,bronze,500
+C004,2024-04-01 09:00:00,Dan Patel,active,bronze,750
