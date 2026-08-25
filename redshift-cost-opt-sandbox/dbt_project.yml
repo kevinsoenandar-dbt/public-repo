@@ -23,6 +23,7 @@ require-dbt-version: [">=1.7.0"]
 models:
   redshift_cost_opt_sandbox:
     staging:
+      +bind: false
       +schema: stg
     intermediate:
       +schema: int
