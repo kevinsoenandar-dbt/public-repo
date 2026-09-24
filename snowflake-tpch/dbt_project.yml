@@ -1,0 +1,36 @@
+name: 'snowflake_tpch'
+version: '0.1.0'
+config-version: 2
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+require-dbt-version: [">=1.7.0"]
+
+# Local-build defaults. The project layers itself materializes as documented:
+#   staging       -> view
+#   intermediate  -> view (with one exception for chain-depth fixture)
+#   marts         -> explicit per-model config (table or incremental)
+models:
+  snowflake_tpch:
+    staging:
+      +schema: stg
+    intermediate:
+      +schema: int
+    marts:
+      +schema: marts
+
+vars:
+  # Tighten/loosen these in the cost-optimization package when running against
+  # this project. They're surfaced here for visibility, not consumed locally.
+  materialization_lookback_days: 7
+  incremental_lookback_days: 14
+flags:
+  require_generic_test_arguments_property: true
