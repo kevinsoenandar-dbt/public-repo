@@ -30,6 +30,7 @@ models:
 vars:
   # Tighten/loosen these in the cost-optimization package when running against
   # this project. They're surfaced here for visibility, not consumed locally.
+  dbt_cost_optimization_enabled: true
   materialization_lookback_days: 7
   incremental_lookback_days: 14
 flags:
