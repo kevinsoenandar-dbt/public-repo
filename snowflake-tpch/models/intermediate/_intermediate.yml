@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: int_customer_geo
+    description: >
+      Customers joined to nations and regions. Used by 2+ downstream marts —
+      designed to trigger int_redshift__materialization_candidates via the
+      downstream_count gate.
+    columns:
+      - name: customer_id
+        data_tests: [not_null, unique]
+
+  - name: int_lineitem_enriched
+    description: >
+      Lineitem joined to orders and customers. Used by 2+ downstream
+      fact/aggregation marts. Wide + expensive to re-scan — designed to surface
+      a high total_gb_rescanned signal once the view accumulates query traffic.
+    columns:
+      - name: order_id
+        data_tests: [not_null]
+      - name: line_number
+        data_tests: [not_null]
+
+  - name: int_order_priorities
+    description: >
+      View, sits 2 hops from the materialized downstream agg. Pair with
+      int_order_priorities_summary to verify min_hops_to_table values across
+      the chain (this model = 2, summary = 1).
+    columns:
+      - name: order_id
+        data_tests: [not_null]
+
+  - name: int_order_priorities_summary
+    description: >
+      View, sits 1 hop from the materialized downstream agg. Counterpart to
+      int_order_priorities for min_hops_to_table testing.
