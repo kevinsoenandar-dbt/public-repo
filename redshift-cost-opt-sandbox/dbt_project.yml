@@ -31,9 +31,22 @@ models:
       +schema: marts
 
 vars:
-  # Tighten/loosen these in the cost-optimization package when running against
-  # this project. They're surfaced here for visibility, not consumed locally.
   materialization_lookback_days: 7
   incremental_lookback_days: 14
+
+  # Fixes the accumulator's full-refresh backfill window (Issue 14) —
+  # must be >= incremental_candidates_lookback_days below, or a full-refresh
+  # only ever backfills 7 days regardless of how it's tuned.
+  table_query_stats_initial_lookback_days: 60
+
+  # Lowered to match this sandbox's real scale, based on fct_lineitem's
+  # independently-observed build times (~97-150s) and size (~1.49GB) —
+  # the package defaults (300s / 2GB / waste score 5) are production-scale
+  # and won't fire for a toy dataset even with correct data.
+  incremental_candidates_min_build_time_sec: 60
+  incremental_candidates_min_size_gb: 1
+  incremental_candidates_min_compute_waste_score: 0.2
+  incremental_candidates_min_compute_waste_avg_build_sec: 30
+
 flags:
   require_generic_test_arguments_property: true
