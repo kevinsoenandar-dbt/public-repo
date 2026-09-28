@@ -11,7 +11,13 @@ renamed as (
         customer_id,
 
         ---------- text
-        initcap(order_status) as order_status,
+        array_join(
+    transform(
+        split(lower(order_status), ' '), 
+        x -> concat(upper(substr(x, 1, 1)), substr(x, 2))
+    ), 
+    ' '
+) as order_status,
 
         ---------- date
         order_date,
