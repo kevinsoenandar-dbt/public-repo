@@ -2,6 +2,10 @@ name: 'athena_sandbox'
 version: '1.0.0'
 profile: 'athena_sandbox'
 
+dbt-cloud:
+  project-id: 517365
+  defer-env-id: 486928
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
