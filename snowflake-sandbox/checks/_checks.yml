@@ -1,0 +1,9 @@
+checks:
+  - name: no_invented_layer
+    description: Check that all models live in the specified layers only, either staging, intermediate or mart
+    config:
+      enabled: "{{ true if env_var('DBT_CLOUD_INVOCATION_CONTEXT') == 'ci' else false }}"
+  - name: model_naming_convention
+    description: Check that all model names follow the established convention within the dbt project
+    config:
+      enabled: "{{ true if env_var('DBT_CLOUD_INVOCATION_CONTEXT') == 'ci' else false }}"
