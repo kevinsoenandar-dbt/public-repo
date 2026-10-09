@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  # ---------------------------------------------------------------------------
+  # Tier 0 'table' fixtures (under incremental_min_table_size_mb / 1000 MB)
+  # ---------------------------------------------------------------------------
+  - name: dim_regions
+    description: Tiny dim, ~5 rows. Tier 0 'table' expected.
+    columns:
+      - name: region_id
+        data_tests: [not_null, unique]
+
+  - name: dim_nations
+    description: Tiny dim, ~25 rows. Tier 0 'table' expected.
+    columns:
+      - name: nation_id
+        data_tests: [not_null, unique]
+
+  - name: dim_suppliers
+    description: ~16 MB. Tier 0 'table' expected.
+    columns:
+      - name: supplier_id
+        data_tests: [not_null, unique]
+
+  - name: dim_parts
+    description: ~30 MB. Tier 0 'table' expected.
+    columns:
+      - name: part_id
+        data_tests: [not_null, unique]
+
+  - name: dim_customers
+    description: >
+      ~250 MB. Below the 1 GB incremental threshold so expected tier 0 'table'.
+      Carries a `unique` test on customer_id — exercise that int_dbt__unique_columns
+      picks the test up even when the model isn't a merge candidate.
+    columns:
+      - name: customer_id
+        data_tests: [not_null, unique]
+
+  # ---------------------------------------------------------------------------
+  # Tier 1 'microbatch' fixture
+  # ---------------------------------------------------------------------------
+  - name: fct_lineitem
+    description: >
+      ~7 GB at SF=10. Materialized as table → CTAS-only DML pattern → observed
+      is_append_mostly = true. event_date column triggers the event_time signal.
+      Expected: tier 1 'microbatch'.
+    columns:
+      - name: order_id
+        data_tests: [not_null]
+      - name: line_number
+        data_tests: [not_null]
+      - name: event_date
+        data_tests: [not_null]
+
+  # ---------------------------------------------------------------------------
+  # Tier 3 'merge' fixture
+  # ---------------------------------------------------------------------------
+  - name: fct_orders
+    description: >
+      ~1.7 GB at SF=10 — fits the 1000–5000 MB merge band. Materialized as
+      incremental MERGE → observed DML is mutating (not append-mostly). Has a
+      `unique` test on order_id which populates int_dbt__unique_columns.
+      Expected: tier 3 'merge' with unique_key = order_id.
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_tests: [not_null]
+
+  # ---------------------------------------------------------------------------
+  # View-chain depth fixtures (test min_hops_to_table in view_chains)
+  # ---------------------------------------------------------------------------
+  - name: agg_order_priority_breakdown
+    description: >
+      Materialized terminus of the int_order_priorities → int_order_priorities_summary
+      → agg_order_priority_breakdown chain. Lets int_redshift__view_chains
+      compute min_hops_to_table = 1 for int_order_priorities_summary and
+      min_hops_to_table = 2 for int_order_priorities.
+
+  # ---------------------------------------------------------------------------
+  # Downstream consumers (ensure intermediate views have downstream_count >= 2)
+  # ---------------------------------------------------------------------------
+  - name: agg_customer_revenue
+    description: >
+      Second downstream of int_customer_geo. With dim_customers being the first,
+      int_customer_geo crosses the downstream_count >= 2 gate for
+      materialization_candidates.
+
+  - name: agg_daily_sales
+    description: >
+      Second downstream of int_lineitem_enriched. Pushes the view over the
+      downstream_count gate.
