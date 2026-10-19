@@ -43,6 +43,8 @@ models:
           - include: all
             exclude: [order_product_quantity]
   - name: dim_order
+    config:
+      access: public
     columns:
       - name: order_id
         description: The unique key of the dim_order table.
@@ -61,6 +63,8 @@ models:
       - name: product_category
       - name: product_subcategory
   - name: dim_customer
+    config:
+      access: public
     columns:
       - name: customer_id
       - name: customer_first_name
