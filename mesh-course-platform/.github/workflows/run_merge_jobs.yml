@@ -1,0 +1,32 @@
+name: Trigger merge jobs in dbt Cloud
+run-name: Running two merge jobs in dbt Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-dbt-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.x"
+
+      - name: Install dependencies
+        run: pip install requests pendulum
+
+      - name: Run dbt Cloud jobs
+        run: python .github/script/dbt_cloud_run_jobs.py
+        env: 
+          DBT_CLOUD_ACCOUNT_ID: "${{secrets.DBT_CLOUD_ACCOUNT_ID}}"
+          DBT_CLOUD_PROJECT_ID: "${{secrets.DBT_CLOUD_PROJECT_ID}}"
+          DBT_CLOUD_JOB_ID_PARSE: "${{secrets.DBT_CLOUD_JOB_ID_PARSE}}"
+          DBT_CLOUD_JOB_ID_BUILD: "${{secrets.DBT_CLOUD_JOB_ID_BUILD}}"
+          DBT_CLOUD_API_TOKEN: "${{secrets.DBT_CLOUD_API_TOKEN}}"
+          GITHUB_SHA: "${{github.sha}}"

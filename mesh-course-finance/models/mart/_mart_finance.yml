@@ -1,0 +1,33 @@
+models:
+  - name: daily_profit_loss
+    columns:
+      - name: order_date
+        description: The date of the order
+      - name: total_revenue
+        description: The total revenue for the day
+      - name: total_cost
+        description: The total direct cost from all orders for the day
+      - name: total_profit
+        description: The total gross profit from all orders for the day
+  - name: revenue_by_customer
+    columns:
+      - name: customer_id
+        description: The customer ID
+      - name: total_revenue
+        description: The total lifetime revenue for the customer
+      - name: total_cost
+        description: The total lifetime direct cost for the customer
+      - name: total_profit
+        description: The total lifetime gross profit for the customer
+  - name: revenue_by_product
+    columns:
+      - name: product_id
+        description: The product ID
+      - name: total_quantity
+        description: The total quantity sold for the product
+      - name: total_revenue
+        description: The total revenue for the product
+      - name: total_cost
+        description: The total direct cost for the product
+      - name: total_profit
+        description: The total gross profit for the product

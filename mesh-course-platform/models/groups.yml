@@ -1,0 +1,11 @@
+groups:
+  - name: finance
+    owner:
+      name: Firstname Lastname
+      email: finance@bikeshop.com
+      slack: finance-data
+      github: finance-data-team
+  - name: product
+    owner:
+      email: product@bikeshop.com
+      github: product-data-team
