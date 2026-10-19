@@ -8,7 +8,7 @@ models:
     latest_version: 1
     columns:
       - name: product_price
-        data_type: float
+        data_type: number
       - name: order_product_id
         data_type: varchar
         constraints:
@@ -31,7 +31,7 @@ models:
       - name: order_product_quantity
         data_type: int
       - name: product_cost
-        data_type: float
+        data_type: number
     versions:
       - v: 1
       - v: 2
