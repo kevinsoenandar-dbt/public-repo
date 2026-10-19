@@ -16,8 +16,8 @@ renamed as (
         subcategory as product_subcategory,
 
         ---------- numbers
-        price as product_price,
-        round(product_cost, 2) as product_cost,
+        price::float as product_price,
+        round(product_cost, 2)::float as product_cost,
 
         ---------- timestamp
         loaded_at
