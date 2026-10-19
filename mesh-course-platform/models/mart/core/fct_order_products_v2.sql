@@ -25,7 +25,6 @@ with order_products as (
         cast(orders.order_date as date) as order_date,
         order_products.order_product_quantity as item_quantity,
         products.product_price,
-        {{ dollars_to_cents('products.product_price') }} as product_price_cents,
         products.product_cost
 
     from order_products
