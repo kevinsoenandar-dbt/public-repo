@@ -1,0 +1,78 @@
+models:
+  - name: fct_order_products
+    config:
+      access: public
+      group: product
+      contract:
+        enforced: true
+    latest_version: 1
+    columns:
+      - name: product_price
+        data_type: float
+      - name: order_product_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+          - type: unique
+      - name: product_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: order_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: customer_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: order_date
+        data_type: timestamp
+      - name: order_product_quantity
+        data_type: int
+      - name: product_cost
+        data_type: float
+    versions:
+      - v: 1
+        config:
+          alias: fct_order_products
+      - v: 2
+        columns:
+          - name: order_date
+            data_type: date
+          - name: item_quantity
+            data_type: number
+          - include: all
+            exclude: [order_product_quantity]
+  - name: dim_order
+    columns:
+      - name: order_id
+        description: The unique key of the dim_order table.
+      - name: order_status
+        description: The status of the order.
+      - name: order_date
+        description: The date that order was placed.
+  - name: dim_product
+    config:
+      access: public
+      group: product
+    columns:
+      - name: product_id
+      - name: product_name
+      - name: product_material
+      - name: product_category
+      - name: product_subcategory
+  - name: dim_customer
+    columns:
+      - name: customer_id
+      - name: customer_first_name
+      - name: customer_last_name
+      - name: customer_gender
+      - name: customer_city
+      - name: customer_city
+  - name: dim_date
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day
