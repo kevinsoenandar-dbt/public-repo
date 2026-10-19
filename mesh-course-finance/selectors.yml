@@ -1,0 +1,10 @@
+selectors:
+  - name: local_modified_roots
+    definition:
+      intersection:
+        - method: state
+          value: modified
+          indirect_selection: empty
+        - method: package
+          value: bike_shop_finance
+          indirect_selection: empty
