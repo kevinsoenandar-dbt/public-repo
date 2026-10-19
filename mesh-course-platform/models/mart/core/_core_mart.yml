@@ -34,8 +34,6 @@ models:
         data_type: float
     versions:
       - v: 1
-        config:
-          alias: fct_order_products
       - v: 2
         columns:
           - name: order_date
