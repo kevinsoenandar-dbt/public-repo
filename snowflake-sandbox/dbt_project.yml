@@ -44,5 +44,6 @@ saved-queries:
 
 on-run-end:
   - "{{ grant_revoke_schema_usage() }}"
+  - "{{ promote_blue_green_models(results) }}"
 flags:
   require_generic_test_arguments_property: true

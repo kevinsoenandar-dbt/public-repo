@@ -1,3 +1,8 @@
+{{ config(
+    materialized="table",
+    meta={"blue_green": True}
+) }}
+
 with segments as (
     select * from {{ ref('int_customer_rfm_segments') }}
 ),
